@@ -32,7 +32,7 @@ int Device::Init()
 		return 0;
 	}
 
-	if (supportFlags & KSPROPERTY_SUPPORT_SET != KSPROPERTY_SUPPORT_SET)
+	if ((supportFlags & KSPROPERTY_SUPPORT_SET) != KSPROPERTY_SUPPORT_SET)
 	{
 		return 0;
 	}
@@ -42,7 +42,7 @@ int Device::Init()
 
 int Device::SetData(PVOID dataPointer, ULONG dataLength)
 {
-	if (dataLength != WIDTH * HEIGHT * 3) 
+	if (dataLength != VIRTUALCAMERA_WIDTH * VIRTUALCAMERA_HEIGHT * 3)
 	{
 		return -1;
 	}

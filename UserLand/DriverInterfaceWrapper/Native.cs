@@ -10,7 +10,7 @@ namespace DriverInterfaceWrapper
     class Native
     {
         [DllImport("DriverInterface.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Init();
+        public static extern int Init(Boolean multiThread);
 
         [DllImport("DriverInterface.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int Free();

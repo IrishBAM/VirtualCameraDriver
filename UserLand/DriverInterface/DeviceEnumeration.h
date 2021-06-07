@@ -2,5 +2,7 @@
 
 #include "Common.h"
 
-int EnumerateDevicePaths(string* paths, int maxCount);
-int GetFilter(string path, IBaseFilter** filter);
+#include <string>
+
+int EnumerateDevicePaths(std::string* paths, int maxCount);
+int GetFilter(std::string path, IBaseFilter** filter);

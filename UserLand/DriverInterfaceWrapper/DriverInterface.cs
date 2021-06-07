@@ -13,7 +13,7 @@ namespace DriverInterfaceWrapper
 
         public static bool Init()
         {
-            return (Native.Init() != 0);
+            return (Native.Init(true) != 0);
         }
 
         public static void Free()

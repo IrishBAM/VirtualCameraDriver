@@ -1,14 +1,15 @@
 #pragma once
 
-#include <SDKDDKVer.h>
-
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <dshow.h>
-#include <dvdmedia.h>
 
-#include <string>
+#define VIRTUALCAMERA_WIDTH 1280
+#define VIRTUALCAMERA_HEIGHT 720
+#define VIRTUALCAMERA_NAME "avshws Source"
 
-using namespace std;
-
-#define EXPORT extern "C" __declspec(dllexport)
+#ifdef DRIVERINTERFACE_EXPORTS
+#define DRIVERINTERFACE extern "C" __declspec(dllexport)
+#else
+#define DRIVERINTERFACE extern "C" __declspec(dllimport)
+#endif

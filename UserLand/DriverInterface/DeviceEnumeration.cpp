@@ -9,16 +9,12 @@ HRESULT EnumerateDevices(REFGUID category, IEnumMoniker **ppEnum)
 	if (SUCCEEDED(hr))
 	{
 		hr = pDevEnum->CreateClassEnumerator(category, ppEnum, 0);
-		if (hr == S_FALSE)
-		{
-			hr = S_FALSE;
-		}
 		pDevEnum->Release();
 	}
 	return hr;
 }
 
-int EnumerateDevicePaths(string* paths, int maxCount)
+int EnumerateDevicePaths(std::string* paths, int maxCount)
 {
 	int index = 0;
 
@@ -30,8 +26,24 @@ int EnumerateDevicePaths(string* paths, int maxCount)
 		IMoniker *pMoniker = NULL;
 		while (pEnum->Next(1, &pMoniker, NULL) == S_OK && index < maxCount)
 		{
-			LPOLESTR str;
-			pMoniker->GetDisplayName(0, 0, &str);
+			LPOLESTR str = L"";;
+			VARIANT deviceName;
+			VariantInit(&deviceName);
+			IPropertyBag *pPropBag;
+			hr = pMoniker->BindToStorage(0, 0, IID_PPV_ARGS(&pPropBag));
+			if (SUCCEEDED(hr))
+			{
+				hr = pPropBag->Read(L"Description", &deviceName, 0);
+				if (FAILED(hr))
+				{
+					hr = pPropBag->Read(L"FriendlyName", &deviceName, 0);
+				}
+				str = deviceName.bstrVal;
+			}
+			if (FAILED(hr))
+			{
+				pMoniker->GetDisplayName(0, 0, &str);
+			}
 
 			size_t numChars = 0;
 			char cstr[1024];
@@ -52,7 +64,7 @@ int EnumerateDevicePaths(string* paths, int maxCount)
 	return index;
 }
 
-int GetFilter(string path, IBaseFilter** filter)
+int GetFilter(std::string path, IBaseFilter** filter)
 {
 	bool found = false;
 
@@ -64,8 +76,26 @@ int GetFilter(string path, IBaseFilter** filter)
 		IMoniker *pMoniker = NULL;
 		while (pEnum->Next(1, &pMoniker, NULL) == S_OK)
 		{
-			LPOLESTR str;
-			pMoniker->GetDisplayName(0, 0, &str);
+			LPOLESTR str = L"";
+			VARIANT deviceName;
+			VariantInit(&deviceName);
+
+			IPropertyBag *pPropBag;
+			hr = pMoniker->BindToStorage(0, 0, IID_PPV_ARGS(&pPropBag));
+			if (SUCCEEDED(hr))
+			{
+				hr = pPropBag->Read(L"Description", &deviceName, 0);
+				str = deviceName.bstrVal;
+				if (FAILED(hr))
+				{
+					hr = pPropBag->Read(L"FriendlyName", &deviceName, 0);
+					str = deviceName.bstrVal;
+				}
+			}
+			if (FAILED(hr))
+			{
+				pMoniker->GetDisplayName(0, 0, &str);
+			}
 
 			size_t numChars = 0;
 			char cstr[1024];

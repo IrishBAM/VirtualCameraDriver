@@ -3,17 +3,18 @@
 #include "Device.h"
 
 #define NUM_MAX_PATHS 16
-static string cachedPaths[NUM_MAX_PATHS];
+static std::string cachedPaths[NUM_MAX_PATHS];
 static int numDevices;
 
 static Device* activeDevice = NULL;
 
-#define TEMPORARY_BUFFER_SIZE (WIDTH * HEIGHT * 3)
+#define TEMPORARY_BUFFER_SIZE (VIRTUALCAMERA_WIDTH * VIRTUALCAMERA_HEIGHT * 3)
 static PVOID temporaryBuffer = NULL;
 
-EXPORT int Init()
+DRIVERINTERFACE int Init(bool multiThread)
 {
-	HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+	HRESULT hr = multiThread ? CoInitializeEx(NULL, COINIT_MULTITHREADED) :
+		CoInitialize(NULL);
 	if (!SUCCEEDED(hr))
 	{
 		return 0;
@@ -33,7 +34,7 @@ EXPORT int Init()
 	return 1;
 }
 
-EXPORT int Free()
+DRIVERINTERFACE int Free()
 {
 	if (activeDevice != NULL) 
 	{
@@ -47,12 +48,12 @@ EXPORT int Free()
 	return 1;
 }
 
-EXPORT int GetNumDevices()
+DRIVERINTERFACE int GetNumDevices()
 {
 	return numDevices;
 }
 
-EXPORT int GetDevicePath(int index, char* str, int maxLen)
+DRIVERINTERFACE int GetDevicePath(int index, char* str, int maxLen)
 {
 	if (index < 0 || index >= numDevices) {
 		return -1;
@@ -63,7 +64,7 @@ EXPORT int GetDevicePath(int index, char* str, int maxLen)
 	return 1;
 }
 
-EXPORT void DestroyDevice()
+DRIVERINTERFACE void DestroyDevice()
 {
 	if (activeDevice != NULL)
 	{
@@ -72,12 +73,12 @@ EXPORT void DestroyDevice()
 	}
 }
 
-EXPORT int SetDevice(char* str, int strLen) 
+DRIVERINTERFACE int SetDevice(char* str, int strLen) 
 {
 	DestroyDevice();
 
 	IBaseFilter* filter = NULL;
-	if (!GetFilter(string(str), &filter) || filter == NULL)
+	if (!GetFilter(std::string(str), &filter) || filter == NULL)
 	{
 		return 0;
 	}
@@ -94,14 +95,14 @@ EXPORT int SetDevice(char* str, int strLen)
 	return 1;
 }
 
-EXPORT int SetBuffer(PVOID data, DWORD stride, DWORD width, DWORD height)
+DRIVERINTERFACE int SetBuffer(void *data, unsigned long stride, unsigned long width, unsigned long height)
 {
 	if (activeDevice == NULL) 
 	{
 		return -1;
 	}
 
-	if (width != WIDTH || height != HEIGHT) 
+	if (width != VIRTUALCAMERA_WIDTH || height != VIRTUALCAMERA_HEIGHT)
 	{
 		return -1;
 	}
@@ -113,8 +114,8 @@ EXPORT int SetBuffer(PVOID data, DWORD stride, DWORD width, DWORD height)
 	for (ULONG y = 0; y < height; y++)
 	{
 		PUCHAR sourceLine = inputData + stride * y;
-		PUCHAR targetLine = buffer + ((WIDTH * 3) * y);
-		memcpy(targetLine, sourceLine, WIDTH * 3);
+		PUCHAR targetLine = buffer + ((VIRTUALCAMERA_WIDTH * 3) * y);
+		memcpy(targetLine, sourceLine, VIRTUALCAMERA_WIDTH * 3);
 	}
 
 	activeDevice->SetData(temporaryBuffer, TEMPORARY_BUFFER_SIZE);
